@@ -1,0 +1,19 @@
+.casa {
+    -fx-background-color: green;
+    -fx-pref-width: 60;
+    -fx-pref-height: 60;
+    -fx-border-color: black;
+}
+
+.imagemPeca {
+    -fx-background-image: url("imagens/peca.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+
+.imagemPecaAdversaria {
+    -fx-background-image: url("imagens/pecaAdversaria.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+
