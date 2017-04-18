@@ -4,11 +4,11 @@ import modulos.comunicacao.modelos.Comunicacao;
 import utilitarios.JanelaAlerta;
 
 import java.io.IOException;
+import java.rmi.registry.LocateRegistry;
 
 //classe servico de comunicacao usado no controlador
 public class ComunicacaoServico {
 
-    private Comunicacao comunicacao;
     private JanelaAlerta janelaAlerta;
     private boolean servidor;
 
@@ -18,25 +18,19 @@ public class ComunicacaoServico {
 
     public void iniciarComunicacao() {
         try {
-            comunicacao = new Comunicacao(); //inicia a conexao
-            comunicacao.iniciarServidor(9999);
+            LocateRegistry.createRegistry(1099);
             janelaAlerta.janelaAlerta("Iniciar Partida", null, "Aguarde o jogador 2 conectar-se ....");
-            comunicacao.esperandoConexao();
             janelaAlerta.janelaAlerta("Iniciar Partida", null, "O jogador 2 conectou-se");
             servidor = true;
         } catch (IOException e) { //caso o servidor esteja conectado é iniciado o cliente
             try {
-                comunicacao.iniciarCliente(9999);
+                //comunicacao.iniciarCliente();
                 servidor = false;
-            } catch (IOException e1) {
+            } catch (Exception e1) {
                 e1.printStackTrace();
             }
         }
 
-    }
-
-    public Comunicacao getComunicacao() {
-        return comunicacao;
     }
 
     //verificar se o jogador conectado é o cliente

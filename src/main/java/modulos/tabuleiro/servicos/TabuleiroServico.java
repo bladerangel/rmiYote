@@ -180,7 +180,7 @@ public class TabuleiroServico {
 
     //jogador sair da partida
     public void sairPartida() {
-        comunicacaoServico.getComunicacao().fecharConexao();
+        //comunicacaoServico.getComunicacao().fecharConexao();
     }
 
     public Tabuleiro getTabuleiro() {

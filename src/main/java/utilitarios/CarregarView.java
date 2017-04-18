@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 
 //classe utilitario para o carregamento de arquivos .fxml
 public class CarregarView {
@@ -35,7 +36,13 @@ public class CarregarView {
     //executa a açao quando o jogador fecha a janela
     public void sairPartida() {
         MainControlador mainControlador = (MainControlador) fxmlLoader.getController();
-        estagio.setOnCloseRequest(event -> mainControlador.sairPartida());
+        estagio.setOnCloseRequest(event -> {
+            try {
+                mainControlador.sairPartida();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     //mostra a aplicação layout

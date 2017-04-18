@@ -9,6 +9,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.util.ResourceBundle;
 
 import modulos.main.servicos.MainServico;
@@ -52,19 +53,19 @@ public class MainControlador implements Initializable {
 
     //o jogador clica no botao pegar peça
     @FXML
-    public void pegarPeca() {
+    public void pegarPeca() throws RemoteException {
         mainServico.getTabuleiroEnviarPacoteServico().enviarPacotePegarPeca();
     }
 
     //o jogador clica no botao passar turno
     @FXML
-    public void passarTurno() {
+    public void passarTurno() throws RemoteException {
         mainServico.getTabuleiroEnviarPacoteServico().enviarPacotePassarTurno();
     }
 
     //o jogador clica no botao desistir da partida
     @FXML
-    private void desistirPartida() {
+    private void desistirPartida() throws RemoteException {
         mainServico.getTabuleiroEnviarPacoteServico().enviarPacoteDesistirPartida();
     }
 
@@ -76,12 +77,12 @@ public class MainControlador implements Initializable {
 
     //o jogador clica no botao para enviar uma mensagem ao chat
     @FXML
-    public void enviarMensagem() {
+    public void enviarMensagem() throws RemoteException {
         mainServico.getTabuleiroEnviarPacoteServico().enviarPacoteMensagemChat();
     }
 
     //o jogador clica no para sair do jogo
-    public void sairPartida() {
+    public void sairPartida() throws RemoteException {
         mainServico.getTabuleiroEnviarPacoteServico().enviarPacoteSairPartida();
     }
 }
