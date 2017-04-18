@@ -3,12 +3,12 @@ package modulos.tabuleiro.servicos;
 import modulos.casa.componentes.CasaBotao;
 import modulos.casa.modelos.Casa;
 import modulos.chat.servicos.ChatServico;
-import modulos.comunicacao.interfaces.ServidorInterface;
 import modulos.comunicacao.servicos.ComunicacaoServico;
 import modulos.tabuleiro.modelos.Tabuleiro;
 import utilitarios.JanelaAlerta;
 
-import java.rmi.Naming;
+import java.net.MalformedURLException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 //classe servico envia pacote tabuleiro usado no controlador
@@ -18,10 +18,9 @@ public class TabuleiroEnviarPacoteServico {
     private TabuleiroServico tabuleiroServico;
     private ComunicacaoServico comunicacaoServico;
     private ChatServico chatServico;
-    private ServidorInterface servidorInterface;
 
-    public TabuleiroEnviarPacoteServico(JanelaAlerta janelaAlerta, TabuleiroServico tabuleiroServico, ComunicacaoServico comunicacaoServico, ChatServico chatServico) throws RemoteException {
-        super();
+
+    public TabuleiroEnviarPacoteServico(JanelaAlerta janelaAlerta, TabuleiroServico tabuleiroServico, ComunicacaoServico comunicacaoServico, ChatServico chatServico) {
         this.janelaAlerta = janelaAlerta;
         this.tabuleiroServico = tabuleiroServico;
         this.comunicacaoServico = comunicacaoServico;
@@ -35,60 +34,51 @@ public class TabuleiroEnviarPacoteServico {
         }));
     }
 
-    public void procurarServidorNomes() {
-        try {
-            servidorInterface = (ServidorInterface) Naming.lookup("//localhost/cliente" + tabuleiroServico.getTabuleiro().getJogadorAdversario().getTipo());
-        } catch (Exception e) {
-            e.printStackTrace();
+    //envia mensagem para iniciar a partida apos o segundo jogador se registrar
+    public void enviarPacoteIniciarPartida() throws RemoteException, NotBoundException, MalformedURLException {
+        if (!comunicacaoServico.isServidor()) {
+            tabuleiroServico.iniciarPartida();
+            comunicacaoServico.getComunicacao().getServidorInterface().receberPacoteIniciarPartida();
         }
+
     }
 
     //envia mensagem no chat
-   
     public void enviarPacoteMensagemChat() throws RemoteException {
         if (!chatServico.getEscreverMensagem().getText().equals("")) {
-            procurarServidorNomes();
-            servidorInterface.receberPacoteMensagemChat(tabuleiroServico.getTabuleiro().getJogador().getTipo(), chatServico.getEscreverMensagem().getText());
+            comunicacaoServico.getComunicacao().getServidorInterface().receberPacoteMensagemChat(tabuleiroServico.getTabuleiro().getJogador().getTipo(), chatServico.getEscreverMensagem().getText());
             tabuleiroServico.adicionarMensagemChat(tabuleiroServico.getTabuleiro().getJogador().getTipo(), chatServico.getEscreverMensagem().getText());
             chatServico.limparMensagem();
         }
     }
 
     //envia mensagem de pegar peça fora do tabuleiro
-   
     public void enviarPacotePegarPeca() throws RemoteException {
-        procurarServidorNomes();
         tabuleiroServico.pegarPeca();
         tabuleiroServico.desabilitarBotaoPegarPeca(true);
-        servidorInterface.recebePacotePegarPeca();
+        comunicacaoServico.getComunicacao().getServidorInterface().recebePacotePegarPeca();
     }
 
     //envia mensagem de passar turno
-   
     public void enviarPacotePassarTurno() throws RemoteException {
-        procurarServidorNomes();
         tabuleiroServico.passarTurno();
-        servidorInterface.receberPacotePassarTurno();
+        comunicacaoServico.getComunicacao().getServidorInterface().receberPacotePassarTurno();
         tabuleiroServico.desabilitarBotaoPegarPeca(true);
         tabuleiroServico.desabilitarBotaoPassarTurno(true);
     }
 
     //envia mensagem do jogador que adicionou uma peça no tabuleiro
-   
     public void enviarPacoteAdicionarPeca(int posicao) throws RemoteException {
-        procurarServidorNomes();
         tabuleiroServico.adicionarPeca(posicao);
         tabuleiroServico.setTextNumeroPecas();
-        servidorInterface.receberPacoteAdicionarPeca(posicao);
+        comunicacaoServico.getComunicacao().getServidorInterface().receberPacoteAdicionarPeca(posicao);
         enviarPacotePassarTurno();
     }
 
     //envia mensagem do jogador que andou uma posicao no tabuleiro
-   
     public void enviarPacoteAndarPeca(int posicaoInicial, int posicaoFinal) throws RemoteException {
-        procurarServidorNomes();
         tabuleiroServico.andarPecar(posicaoInicial, posicaoFinal);
-        servidorInterface.receberPacoteAndarPeca(posicaoInicial, posicaoFinal);
+        comunicacaoServico.getComunicacao().getServidorInterface().receberPacoteAndarPeca(posicaoInicial, posicaoFinal);
         enviarPacotePassarTurno();
     }
 
@@ -156,10 +146,8 @@ public class TabuleiroEnviarPacoteServico {
     }
 
     //envia mensagem do jogador que capturou uma peça do adversario
-   
     public void enviarPacoteCapturarPeca(int posicaoInicial, int posicaoFinal, int posicaoVerificar) throws RemoteException {
         if (tabuleiroServico.getCasasTabuleiro().get(posicaoVerificar).getCasa().getPeca().getTipo() == tabuleiroServico.getTabuleiro().getJogadorAdversario().getTipo()) {
-            procurarServidorNomes();
             tabuleiroServico.capturarPeca(posicaoInicial, posicaoFinal, posicaoVerificar);
             tabuleiroServico.getTabuleiro().getJogadorAdversario().removerPecasDentroTabuleiro();
             tabuleiroServico.getCasasTabuleiro().get(posicaoVerificar).removerPeca(tabuleiroServico.getTabuleiro().getJogadorAdversario());
@@ -168,75 +156,63 @@ public class TabuleiroEnviarPacoteServico {
             tabuleiroServico.setTextNumeroPecasAdversarias();
             tabuleiroServico.desabilitarBotaoPegarPeca(true);
             tabuleiroServico.desabilitarBotaoPassarTurno(false);
-            servidorInterface.receberPacoteCapturarPeca(posicaoInicial, posicaoFinal, posicaoVerificar);
+            comunicacaoServico.getComunicacao().getServidorInterface().receberPacoteCapturarPeca(posicaoInicial, posicaoFinal, posicaoVerificar);
             verificarVitoria();
             verificarEmpate();
         }
     }
 
     //envia mensagem do jogador que removou outra peça do adversario caso tenha capturado
-   
     public void enviarPacoteRemoverOutraPeca(int posicao) throws RemoteException {
         if (tabuleiroServico.getCasasTabuleiro().get(posicao).getCasa().getPeca().getTipo() == tabuleiroServico.getTabuleiro().getJogadorAdversario().getTipo()) {
-            procurarServidorNomes();
             tabuleiroServico.getTabuleiro().getJogadorAdversario().removerPecasDentroTabuleiro();
             tabuleiroServico.getCasasTabuleiro().get(posicao).removerPeca(tabuleiroServico.getTabuleiro().getJogadorAdversario());
             tabuleiroServico.removerOutraPeca(posicao);
             tabuleiroServico.getTabuleiro().getTurnoJogador().setRemoverOutraPeca(false);
             tabuleiroServico.setTextNumeroPecasAdversarias();
-            servidorInterface.receberPacoteRemoverOutraPeca(posicao);
+            comunicacaoServico.getComunicacao().getServidorInterface().receberPacoteRemoverOutraPeca(posicao);
             verificarVitoria();
             verificarEmpate();
 
         }
     }
 
-    //verifica e envia mensagem se há um jogador vitorioso,
-   
+    //verifica e envia mensagem se há um jogador vitorioso
     public void verificarVitoria() throws RemoteException {
         if (tabuleiroServico.getTabuleiro().getJogadorAdversario().totalPecas() == 0) {
-            procurarServidorNomes();
             janelaAlerta.janelaAlertaRunLater("Resultado da partida", null, "Você ganhou a partida!");
             tabuleiroServico.vitoria();
-            servidorInterface.receberPacoteVitoria();
+            comunicacaoServico.getComunicacao().getServidorInterface().receberPacoteVitoria();
             enviarPacoteReiniciarPartida();
         }
     }
 
     //verifica e envia mensagem se há empate
-   
     public void verificarEmpate() throws RemoteException {
         if (tabuleiroServico.getTabuleiro().getTurnoJogador().totalPecas() <= 3 && tabuleiroServico.getTabuleiro().getJogadorAdversario().totalPecas() <= 3) {
-            procurarServidorNomes();
             tabuleiroServico.empate();
-            servidorInterface.receberEmpatePartida();
+            comunicacaoServico.getComunicacao().getServidorInterface().receberEmpatePartida();
             enviarPacoteReiniciarPartida();
         }
     }
 
     //envia mensagem para reinicio de partida
-   
     public void enviarPacoteReiniciarPartida() throws RemoteException {
-        procurarServidorNomes();
         tabuleiroServico.reiniciarPartida();
-        servidorInterface.receberPacoteReiniciarPartida();
+        comunicacaoServico.getComunicacao().getServidorInterface().receberPacoteReiniciarPartida();
     }
 
     //envia mensagem para desistencia de partida
-   
     public void enviarPacoteDesistirPartida() throws RemoteException {
-        procurarServidorNomes();
         chatServico.adicionarMensagemChat("O jogador " + tabuleiroServico.getTabuleiro().getJogador().getTipo() + " desistiu da partida!");
-        servidorInterface.recebePacoteDesistirPartida(tabuleiroServico.getTabuleiro().getJogador().getTipo());
+        comunicacaoServico.getComunicacao().getServidorInterface().recebePacoteDesistirPartida(tabuleiroServico.getTabuleiro().getJogador().getTipo());
         enviarPacoteReiniciarPartida();
     }
 
     //envia mensagem para saida de partida
-   
-    public void enviarPacoteSairPartida() throws RemoteException {
-        procurarServidorNomes();
-        servidorInterface.receberPacoteSairPartida(tabuleiroServico.getTabuleiro().getJogador().getTipo());
-        tabuleiroServico.sairPartida();
+    public void enviarPacoteSairPartida() throws RemoteException, MalformedURLException, NotBoundException {
+        comunicacaoServico.getComunicacao().getServidorInterface().receberPacoteSairPartida(tabuleiroServico.getTabuleiro().getJogador().getTipo());
+        comunicacaoServico.getComunicacao().removerRegistroServidor(tabuleiroServico.getTabuleiro().getJogador());
     }
 
 }

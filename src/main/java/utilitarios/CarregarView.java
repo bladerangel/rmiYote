@@ -6,6 +6,8 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 //classe utilitario para o carregamento de arquivos .fxml
@@ -39,7 +41,7 @@ public class CarregarView {
         estagio.setOnCloseRequest(event -> {
             try {
                 mainControlador.sairPartida();
-            } catch (RemoteException e) {
+            } catch (RemoteException | NotBoundException | MalformedURLException e) {
                 e.printStackTrace();
             }
         });

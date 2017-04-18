@@ -1,29 +1,41 @@
 package modulos.comunicacao.modelos;
 
-import modulos.tabuleiro.servicos.TabuleiroEnviarPacoteServico;
-import modulos.tabuleiro.servicos.TabuleiroReceberPacoteServico;
+import modulos.comunicacao.interfaces.ServidorInterface;
+import modulos.jogador.modelos.Jogador;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 
 //classe comunicacao modelo
 public class Comunicacao {
 
-    //ServidorInterface servidorInterface; //envia
+    private ServidorInterface servidorInterface;
 
-    public void iniciarServidor(TabuleiroEnviarPacoteServico tabuleiroEnviarPacoteServico) throws Exception {
-        //servidorInterface = tabuleiroEnviarPacoteServico;
-        //Naming.rebind("//localhost/servidor", servidorInterface);
-        System.out.println("Servidor Criado!");
+    public void iniciarServidorNomes(int porta) throws RemoteException {
+        LocateRegistry.createRegistry(porta);
     }
 
-    public void iniciarCliente(TabuleiroReceberPacoteServico tabuleiroReceberPacoteServico) throws Exception {
-       //servidorInterface = (ServidorInterface) Naming.lookup("//localhost/servidor");
-        //servidorInterface.setCliente(tabuleiroReceberPacoteServico);
-        System.out.println("Cliente Criado!");
+    //registrar servidor no servidor de nomes
+    public void registrarServidor(ServidorInterface servidorInterface, Jogador jogador) throws IOException {
+        Naming.rebind("//localhost/jogador" + jogador.getTipo(), servidorInterface);
+    }
+
+    //localizar servidor no servidor de nomes
+    public void localizarServidor(Jogador jogador) throws RemoteException, NotBoundException, MalformedURLException {
+        servidorInterface = (ServidorInterface) Naming.lookup("//localhost/jogador" + jogador.getTipo());
 
     }
 
-    //public ServidorInterface getServidorInterface() {
-       // return servidorInterface;
-    //}
+    //remover servidor  no servidor de nomes
+    public void removerRegistroServidor(Jogador jogador) throws RemoteException, NotBoundException, MalformedURLException {
+        Naming.unbind("//localhost/jogador" + jogador.getTipo());
+    }
+
+    public ServidorInterface getServidorInterface() {
+        return servidorInterface;
+    }
 }

@@ -1,9 +1,14 @@
 package modulos.comunicacao.interfaces;
 
+import java.net.MalformedURLException;
+import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+//interface do servidor
 public interface ServidorInterface extends Remote {
+
+    public void receberPacoteIniciarPartida() throws RemoteException, NotBoundException, MalformedURLException;
 
     public void receberPacoteMensagemChat(int jogador, String mensagem) throws RemoteException;
 

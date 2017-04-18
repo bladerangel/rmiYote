@@ -12,6 +12,9 @@ import modulos.chat.servicos.ChatServico;
 import modulos.comunicacao.servicos.ComunicacaoServico;
 import utilitarios.JanelaAlerta;
 
+import java.net.MalformedURLException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 //classe servico tabuleiro usado no controlador
@@ -46,8 +49,8 @@ public class TabuleiroServico {
     }
 
     //inicia a partida
-    public void iniciarPartida() {
-        criarTabuleiro();
+    public void iniciarPartida() throws RemoteException, NotBoundException, MalformedURLException {
+        comunicacaoServico.getComunicacao().localizarServidor(tabuleiro.getJogadorAdversario());
 
     }
 
@@ -176,11 +179,6 @@ public class TabuleiroServico {
     public void reiniciarPartida() {
         chatServico.adicionarMensagemChat("O jogo foi reiniciado!");
         iniciarTabuleiro();
-    }
-
-    //jogador sair da partida
-    public void sairPartida() {
-        //comunicacaoServico.getComunicacao().fecharConexao();
     }
 
     public Tabuleiro getTabuleiro() {

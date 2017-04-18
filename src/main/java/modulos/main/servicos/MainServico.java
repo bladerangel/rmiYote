@@ -5,14 +5,14 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 
 import modulos.chat.servicos.ChatServico;
-import modulos.comunicacao.interfaces.ServidorInterface;
 import modulos.comunicacao.servicos.ComunicacaoServico;
 import modulos.tabuleiro.servicos.TabuleiroEnviarPacoteServico;
 import modulos.tabuleiro.servicos.TabuleiroReceberPacoteServico;
 import modulos.tabuleiro.servicos.TabuleiroServico;
 import utilitarios.JanelaAlerta;
 
-import java.rmi.Naming;
+import java.io.IOException;
+import java.rmi.NotBoundException;
 
 //classe servico main usado no controlador
 public class MainServico {
@@ -24,26 +24,18 @@ public class MainServico {
     private TabuleiroReceberPacoteServico tabuleiroReceberPacoteServico;
     private JanelaAlerta janelaAlerta;
 
-    public MainServico(Pane tabuleiroPane, Text numeroPecas, Text numeroPecasAdversarias, Text tipoJogador, Text turnoAtual, TextField escreverMensagem, TextArea chat, Button pegarPeca, Button passarTurno) {
+    public MainServico(Pane tabuleiroPane, Text numeroPecas, Text numeroPecasAdversarias, Text tipoJogador, Text turnoAtual, TextField escreverMensagem, TextArea chat, Button pegarPeca, Button passarTurno) throws IOException, NotBoundException {
 
         janelaAlerta = new JanelaAlerta();
         comunicacaoServico = new ComunicacaoServico(janelaAlerta);
         comunicacaoServico.iniciarComunicacao(); //inicia a comunicacao
         chatServico = new ChatServico(escreverMensagem, chat);
         tabuleiroServico = new TabuleiroServico(tabuleiroPane, numeroPecas, numeroPecasAdversarias, tipoJogador, turnoAtual, pegarPeca, passarTurno, janelaAlerta, chatServico, comunicacaoServico);
-        tabuleiroServico.iniciarPartida(); //inicia a partida
-        try {
-            tabuleiroEnviarPacoteServico = new TabuleiroEnviarPacoteServico(janelaAlerta, tabuleiroServico, comunicacaoServico, chatServico);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            tabuleiroReceberPacoteServico = new TabuleiroReceberPacoteServico(janelaAlerta, tabuleiroServico, comunicacaoServico, chatServico);
-            Naming.rebind("//localhost/cliente" + tabuleiroServico.getTabuleiro().getJogador().getTipo(), tabuleiroReceberPacoteServico);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        tabuleiroServico.criarTabuleiro(); //inicia o layout do tabuleiro
+        tabuleiroEnviarPacoteServico = new TabuleiroEnviarPacoteServico(janelaAlerta, tabuleiroServico, comunicacaoServico, chatServico);
+        tabuleiroReceberPacoteServico = new TabuleiroReceberPacoteServico(janelaAlerta, tabuleiroServico, comunicacaoServico, chatServico);
+        tabuleiroReceberPacoteServico.iniciarJogador();
+        tabuleiroEnviarPacoteServico.enviarPacoteIniciarPartida();
     }
 
     public ChatServico getChatServico() {

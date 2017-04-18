@@ -8,7 +8,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.ResourceBundle;
 
@@ -48,7 +51,11 @@ public class MainControlador implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        mainServico = new MainServico(tabuleiroPane, numeroPecas, numeroPecasAdversarias, tipoJogador, turnoAtual, escreverMensagem, chat, pegarPeca, passarTurno);
+        try {
+            mainServico = new MainServico(tabuleiroPane, numeroPecas, numeroPecasAdversarias, tipoJogador, turnoAtual, escreverMensagem, chat, pegarPeca, passarTurno);
+        } catch (IOException | NotBoundException e) {
+            e.printStackTrace();
+        }
     }
 
     //o jogador clica no botao pegar peça
@@ -82,7 +89,7 @@ public class MainControlador implements Initializable {
     }
 
     //o jogador clica no para sair do jogo
-    public void sairPartida() throws RemoteException {
+    public void sairPartida() throws RemoteException, MalformedURLException, NotBoundException {
         mainServico.getTabuleiroEnviarPacoteServico().enviarPacoteSairPartida();
     }
 }
